@@ -1,0 +1,38 @@
+package co.edu.uniquindio.poo.panaderia.controller;
+
+import co.edu.uniquindio.poo.panaderia.model.Cajero;
+import co.edu.uniquindio.poo.panaderia.model.Empleado;
+import co.edu.uniquindio.poo.panaderia.model.Panaderia;
+import co.edu.uniquindio.poo.panaderia.model.PanaderoArtesanal;
+import co.edu.uniquindio.poo.panaderia.model.PanaderoIndustrial;
+
+import java.util.List;
+
+public class EmpleadoController {
+private final Panaderia panaderia;
+
+    public EmpleadoController(Panaderia panaderia) {
+        this.panaderia = panaderia;
+    }
+ public Empleado registrarEmpleado(String tipo, String nombre, String documento,
+                                      String codigo, int minutos, String caja) {
+        Empleado empleado;
+        if (tipo.equals("ARTESANAL")) {
+            empleado = new PanaderoArtesanal(nombre, documento, codigo, minutos);
+        } else if (tipo.equals("INDUSTRIAL")) {
+            empleado = new PanaderoIndustrial(nombre, documento, codigo, minutos);
+        } else if (tipo.equals("CAJERO")) {
+            if (caja.isEmpty()) {
+                throw new IllegalArgumentException("Un cajero necesita una caja");
+            }
+            empleado = new Cajero(nombre, documento, codigo, minutos, caja);
+        } else {
+            throw new IllegalArgumentException("El tipo debe ser ARTESANAL, INDUSTRIAL o CAJERO");
+        }
+        panaderia.registrarEmpleado(empleado);
+        return empleado;
+    }
+public List<Empleado> obtenerEmpleados() {
+        return panaderia.getListaEmpleados();
+    }
+}
