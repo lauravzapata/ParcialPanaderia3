@@ -1,0 +1,4 @@
+package co.edu.uniquindio.poo.panaderia.model;
+public interface IProduccion {
+int calcularMinutosProduccion(TipoPan tipoPan, int cantidad);
+}
