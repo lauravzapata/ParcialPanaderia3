@@ -1,0 +1,28 @@
+package co.edu.uniquindio.poo.panaderia.model;
+
+
+public abstract class Panadero extends Empleado implements IProduccion {
+
+    public Panadero(String nombre, String documento, String codigo, int minutosDisponibles) {
+        super(nombre, documento, codigo, minutosDisponibles);
+    }
+
+
+    public int estimarMinutos(Pedido pedido) {
+        return calcularMinutosProduccion(pedido.getTipoPan(), pedido.getCantidad());
+    }
+
+
+    public boolean puedeAtender(Pedido pedido) {
+        return tieneMinutosSuficientes(estimarMinutos(pedido));
+    }
+
+
+    protected int calcularGrupos(int cantidad, int capacidad) {
+        int grupos = cantidad / capacidad;
+        if (cantidad % capacidad != 0) {
+            grupos++;
+        }
+        return grupos;
+    }
+}
