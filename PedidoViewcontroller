@@ -1,0 +1,164 @@
+package co.edu.uniquindio.poo.panaderia.viewcontrollers;
+
+import co.edu.uniquindio.poo.panaderia.app.Aplicacion;
+import co.edu.uniquindio.poo.panaderia.controller.EmpleadoController;
+import co.edu.uniquindio.poo.panaderia.controller.PedidoController;
+import co.edu.uniquindio.poo.panaderia.model.Empleado;
+import co.edu.uniquindio.poo.panaderia.model.Panadero;
+import co.edu.uniquindio.poo.panaderia.model.Pedido;
+import co.edu.uniquindio.poo.panaderia.model.TipoPan;
+import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
+
+public class PedidoViewController {
+
+    private Aplicacion aplicacion;
+    private PedidoController pedidoController;
+    private EmpleadoController empleadoController;
+
+    @FXML
+    private TextField txtCodigo;
+
+    @FXML
+    private TextField txtCliente;
+
+    @FXML
+    private TextField txtTipoPan;
+
+    @FXML
+    private TextField txtCantidad;
+
+    @FXML
+    private Label lblPedidos;
+
+    @FXML
+    private Label lblEmpleados;
+
+    public void setApp(Aplicacion aplicacion) {
+        this.aplicacion = aplicacion;
+        this.pedidoController = new PedidoController(Aplicacion.panaderia);
+        this.empleadoController = new EmpleadoController(Aplicacion.panaderia);
+        mostrarTextos();
+    }
+
+    @FXML
+    void registrarPedidoEvent(ActionEvent event) {
+        String codigo = txtCodigo.getText().trim();
+        String cliente = txtCliente.getText().trim();
+        String tipoTexto = txtTipoPan.getText().trim();
+        if (codigo.isEmpty() || cliente.isEmpty() || tipoTexto.isEmpty()) {
+            mostrarMensaje("Datos incompletos", "Debe diligenciar codigo, cliente y tipo de pan", Alert.AlertType.WARNING);
+            return;
+        }
+
+        TipoPan tipoPan;
+        if (tipoTexto.equals("TRADICIONAL")) {
+            tipoPan = TipoPan.TRADICIONAL;
+        } else if (tipoTexto.equals("INTEGRAL")) {
+            tipoPan = TipoPan.INTEGRAL;
+        } else {
+            mostrarMensaje("Dato invalido", "El tipo de pan debe ser TRADICIONAL o INTEGRAL", Alert.AlertType.WARNING);
+            return;
+        }
+
+        String textoCantidad = txtCantidad.getText().trim();
+        if (!esEntero(textoCantidad)) {
+            mostrarMensaje("Dato invalido", "La cantidad debe ser un numero entero positivo", Alert.AlertType.WARNING);
+            return;
+        }
+        int cantidad = Integer.parseInt(textoCantidad);
+
+        try {
+            pedidoController.registrarPedido(codigo, cliente, tipoPan, cantidad);
+            mostrarMensaje("Pedido registrado", "El pedido " + codigo + " quedo PENDIENTE", Alert.AlertType.INFORMATION);
+            limpiarCampos();
+            mostrarTextos();
+        } catch (RuntimeException e) {
+            mostrarMensaje("No se pudo registrar", e.getMessage(), Alert.AlertType.ERROR);
+        }
+    }
+
+    @FXML
+    void asignarPedidoEvent(ActionEvent event) {
+        String codigo = txtCodigo.getText().trim();
+        if (codigo.isEmpty()) {
+            mostrarMensaje("Datos incompletos", "Ingrese el codigo del pedido", Alert.AlertType.WARNING);
+            return;
+        }
+        try {
+            Panadero panadero = pedidoController.asignarPedido(codigo);
+            mostrarMensaje("Pedido asignado", "El pedido " + codigo + " se asigno a " + panadero.getNombre()
+                    + " (" + panadero.getTipo() + ")", Alert.AlertType.INFORMATION);
+            mostrarTextos();
+        } catch (RuntimeException e) {
+            mostrarMensaje("No se pudo asignar", e.getMessage(), Alert.AlertType.ERROR);
+        }
+    }
+
+    @FXML
+    void cancelarPedidoEvent(ActionEvent event) {
+        String codigo = txtCodigo.getText().trim();
+        if (codigo.isEmpty()) {
+            mostrarMensaje("Datos incompletos", "Ingrese el codigo del pedido", Alert.AlertType.WARNING);
+            return;
+        }
+        try {
+            pedidoController.cancelarPedido(codigo);
+            mostrarMensaje("Pedido cancelado", "El pedido " + codigo + " quedo CANCELADO", Alert.AlertType.INFORMATION);
+            mostrarTextos();
+        } catch (RuntimeException e) {
+            mostrarMensaje("No se pudo cancelar", e.getMessage(), Alert.AlertType.ERROR);
+        }
+    }
+
+    @FXML
+    void volverEvent(ActionEvent event) {
+        aplicacion.openViewInicio();
+    }
+
+ 
+    private void mostrarTextos() {
+        String textoPedidos = "";
+        for (Pedido pedido : pedidoController.obtenerPedidos()) {
+            textoPedidos = textoPedidos + pedido.toString() + "\n";
+        }
+        lblPedidos.setText(textoPedidos);
+
+        String textoEmpleados = "";
+        for (Empleado empleado : empleadoController.obtenerEmpleados()) {
+            textoEmpleados = textoEmpleados + empleado.toString() + "\n";
+        }
+        lblEmpleados.setText(textoEmpleados);
+    }
+
+    
+    private boolean esEntero(String texto) {
+        if (texto.isEmpty() || texto.length() > 9) {
+            return false;
+        }
+        for (int i = 0; i < texto.length(); i++) {
+            if (!Character.isDigit(texto.charAt(i))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private void limpiarCampos() {
+        txtCodigo.setText("");
+        txtCliente.setText("");
+        txtTipoPan.setText("");
+        txtCantidad.setText("");
+    }
+
+    public void mostrarMensaje(String titulo, String mensaje, Alert.AlertType alertType) {
+        Alert alerta = new Alert(alertType);
+        alerta.setTitle(titulo);
+        alerta.setHeaderText(null);
+        alerta.setContentText(mensaje);
+        alerta.showAndWait();
+    }
+}
