@@ -1,0 +1,112 @@
+package co.edu.uniquindio.poo.panaderia.viewcontrollers;
+
+import co.edu.uniquindio.poo.panaderia.app.Aplicacion;
+import co.edu.uniquindio.poo.panaderia.controller.EmpleadoController;
+import co.edu.uniquindio.poo.panaderia.model.Empleado;
+import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
+
+public class EmpleadoViewController {
+private Aplicacion aplicacion;
+    private EmpleadoController empleadoController;
+
+    @FXML
+    private TextField txtTipo;
+
+    @FXML
+    private TextField txtNombre;
+
+    @FXML
+    private TextField txtDocumento;
+
+    @FXML
+    private TextField txtCodigo;
+
+    @FXML
+    private TextField txtMinutos;
+
+    @FXML
+    private TextField txtCaja;
+
+    @FXML
+    private Label lblEmpleados;
+
+    public void setApp(Aplicacion aplicacion) {
+        this.aplicacion = aplicacion;
+        this.empleadoController = new EmpleadoController(Aplicacion.panaderia);
+        mostrarEmpleados();
+    }
+
+    @FXML
+    void registrarEmpleadoEvent(ActionEvent event) {
+        String tipo = txtTipo.getText().trim();
+        String nombre = txtNombre.getText().trim();
+        String documento = txtDocumento.getText().trim();
+        String codigo = txtCodigo.getText().trim();
+        String caja = txtCaja.getText().trim();
+
+        if (tipo.isEmpty() || nombre.isEmpty() || documento.isEmpty() || codigo.isEmpty()) {
+            mostrarMensaje("Datos incompletos", "Debe diligenciar todos los campos", Alert.AlertType.WARNING);
+            return;
+        }
+
+        String textoMinutos = txtMinutos.getText().trim();
+        if (!esEntero(textoMinutos)) {
+            mostrarMensaje("Dato invalido", "Los minutos deben ser un numero entero positivo", Alert.AlertType.WARNING);
+            return;
+        }
+        int minutos = Integer.parseInt(textoMinutos);
+
+        try {
+            empleadoController.registrarEmpleado(tipo, nombre, documento, codigo, minutos, caja);
+            mostrarMensaje("Empleado registrado", nombre + " fue registrado correctamente", Alert.AlertType.INFORMATION);
+            limpiarCampos();
+            mostrarEmpleados();
+        } catch (RuntimeException e) {
+            mostrarMensaje("No se pudo registrar", e.getMessage(), Alert.AlertType.ERROR);
+        }
+    }
+
+    @FXML
+    void volverEvent(ActionEvent event) {
+        aplicacion.openViewInicio();
+    }
+private void mostrarEmpleados() {
+        String texto = "";
+        for (Empleado empleado : empleadoController.obtenerEmpleados()) {
+            texto = texto + empleado.toString() + "\n";
+        }
+        lblEmpleados.setText(texto);
+    }
+ private boolean esEntero(String texto) {
+        if (texto.isEmpty() || texto.length() > 9) {
+            return false;
+        }
+        for (int i = 0; i < texto.length(); i++) {
+            if (!Character.isDigit(texto.charAt(i))) {
+                return false;
+            }
+        }
+        return true;
+    }
+  private void limpiarCampos() {
+        txtTipo.setText("");
+        txtNombre.setText("");
+        txtDocumento.setText("");
+        txtCodigo.setText("");
+        txtMinutos.setText("");
+        txtCaja.setText("");
+    }
+
+    public void mostrarMensaje(String titulo, String mensaje, Alert.AlertType alertType) {
+        Alert alerta = new Alert(alertType);
+        alerta.setTitle(titulo);
+        alerta.setHeaderText(null);
+        alerta.setContentText(mensaje);
+        alerta.showAndWait();
+    }
+}
+
